@@ -8,7 +8,10 @@ repositories {
 }
 
 dependencies {
-    compile 'org.slf4j:slf4j-api:1.7.24'
+  compile "org.slf4j:slf4j-api:$versionslf4j"
+  compile "org.slf4j:slf4j-log4j12:$versionslf4j"
+  compile "log4j:log4j:$versionlog4j"
+  
     compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.15'
     compile 'org.eclipse.jetty:jetty-servlet:9.4.8.v20171121'
     compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
