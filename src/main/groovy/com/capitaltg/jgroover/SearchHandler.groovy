@@ -9,97 +9,66 @@ import javax.servlet.http.HttpServletResponse
 import org.eclipse.jetty.server.Handler
 import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.handler.AbstractHandler
 
-class SearchHandler implements Handler {
+import com.jayway.jsonpath.Configuration
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.PathNotFoundException
 
-  @Override
-  public void start() throws Exception {
-    // TODO Auto-generated method stub
+/**
+ * Handles all server searches.  Looks for APIs with format:
+ *   /api/object?param1=value1&param2=value2...
+ * and returns results of json search on supplied data file
+ */
+class SearchHandler extends AbstractHandler {
+
+  def document
+
+  SearchHandler(def filename) {
+    def text = loadResource(filename)
+    this.document = Configuration.defaultConfiguration().jsonProvider().parse(text);
     
   }
-
-  @Override
-  public void stop() throws Exception {
-    // TODO Auto-generated method stub
+  
+  private String loadResource(def filename) {
     
-  }
-
-  @Override
-  public boolean isRunning() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public boolean isStarted() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public boolean isStarting() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public boolean isStopping() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public boolean isStopped() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public boolean isFailed() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public void addLifeCycleListener(Listener listener) {
-    // TODO Auto-generated method stub
+    def match = filename =~ /classpath:(.*)/
+    if(match) {
+      def resource = match.group(1)
+      InputStream input = this.getClass().getResourceAsStream(resource);
+      return input.text
+    }
     
-  }
-
-  @Override
-  public void removeLifeCycleListener(Listener listener) {
-    // TODO Auto-generated method stub
-    
+    def file = new File(filename)
+    return file.text
   }
 
   @Override
   public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-      throws IOException, ServletException {
+  throws IOException, ServletException {
 
-        println 1212
-        response.setContentType("text/html");
+    Request base_request = (request instanceof Request) ? (Request)request:HttpConnection.getCurrentConnection().getRequest();
+    def match = request.requestURI =~ /\/api\/(\S*)/
+    if(match) {
+      def group = match.group(1)
+      def string = '$.'+group
+      request.parameterMap.each { key, value ->
+        (value as List).each { v ->
+          string += ("[?(@.$key == \"$v\")]")
+        }
+      }
+      try {
+        def results = JsonPath.read(document, string)
+        response.setContentType("text/json");
         response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().println("<h1>Hello OneHandler</h1>");
-        Request base_request = (request instanceof Request) ? (Request)request:HttpConnection.getCurrentConnection().getRequest();
-        base_request.setHandled(true);
+        response.getWriter().println(results);
+      } catch (PathNotFoundException e) {
+        // if no object exists in file, ignore that
+      }
+      base_request.setHandled(true);
+      return
+    }
+    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    base_request.setHandled(true);
   }
-
-  @Override
-  public void setServer(Server server) {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public Server getServer() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public void destroy() {
-    // TODO Auto-generated method stub
-    
-  }
-
 }
