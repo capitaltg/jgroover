@@ -46,3 +46,7 @@ uploadArchives {
     }
   }
 }
+
+[distTar].each { task ->
+  task.enabled = false
+}
