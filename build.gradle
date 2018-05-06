@@ -1,10 +1,23 @@
 apply plugin: 'application'
 apply plugin: 'eclipse'
+apply plugin: 'gitsemver'
 apply plugin: 'groovy'
 apply plugin: 'java'
+apply plugin: 'maven'
+
+buildscript {
+  repositories {
+    maven { url 'https://home.capitaltg.com/nexus/repository/release-combined/' }
+    jcenter()
+  }
+  dependencies {
+    classpath 'com.palantir:gradle-gitsemver:0.6.0'
+  }
+}
 
 repositories {
-    jcenter()
+  maven { url = "https://home.capitaltg.com/nexus/repository/ctg-release/" }
+  maven { url = "https://home.capitaltg.com/nexus/repository/public-combined/" }
 }
 
 dependencies {
@@ -20,3 +33,16 @@ dependencies {
 }
 
 mainClassName = "com.capitaltg.jgroover.JGrooverServer"
+
+group = 'com.capitaltg'
+version semverVersion()
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      repository(url: "https://home.capitaltg.com/nexus/repository/ctg-release/") {
+        authentication(userName: "$nexusUsername", password: "$nexusPassword")
+      }
+    }
+  }
+}

@@ -9,27 +9,29 @@ import com.jayway.jsonpath.JsonPath
 
 class JGrooverServer {
 
+  private int port
+  private Server server
+  private String filename
+  
   static main(args) {
-
-    JGrooverServer server = new JGrooverServer()
+    JGrooverServer server = new JGrooverServer(5050, 'test.json')
     server.startServer()
-    
+  }
+
+  JGrooverServer(int port, def filename) {
+    this.port = port
+    this.filename = filename
   }
 
   def void startServer() {
-    def server = new Server(5050)
-    def handler = new ServletContextHandler(ServletContextHandler.SESSIONS)
-    server.handler = new SearchHandler()
+    server = new Server(this.port)
+    server.handler = new SearchHandler(this.filename)
     server.start()
-
-    def file = new File('test.json')
-    def text = file.text
-    def json = new JsonSlurper().parseText(text)
-
-    Object document = Configuration.defaultConfiguration().jsonProvider().parse(text);
-    def response = JsonPath.read(document, '$.people[?(@.firstName == "Geoffrey")]')
-    println response
-    
   }
+  
+  def void stopServer() {
+    server.stop()
+  }
+  
 }
 
