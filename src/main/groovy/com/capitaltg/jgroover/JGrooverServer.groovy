@@ -14,7 +14,7 @@ class JGrooverServer {
   private String filename
   
   static main(args) {
-    JGrooverServer server = new JGrooverServer(5050, 'test.json')
+    JGrooverServer server = new JGrooverServer(5050, 'classpath:/test2.json')
     server.startServer()
   }
 

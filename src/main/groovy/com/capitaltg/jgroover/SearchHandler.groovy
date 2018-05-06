@@ -24,10 +24,23 @@ class SearchHandler extends AbstractHandler {
 
   def document
 
-  SearchHandler(def filename){
-    def file = new File(filename)
-    def text = file.text
+  SearchHandler(def filename) {
+    def text = loadResource(filename)
     this.document = Configuration.defaultConfiguration().jsonProvider().parse(text);
+    
+  }
+  
+  private String loadResource(def filename) {
+    
+    def match = filename =~ /classpath:(.*)/
+    if(match) {
+      def resource = match.group(1)
+      InputStream input = this.getClass().getResourceAsStream(resource);
+      return input.text
+    }
+    
+    def file = new File(filename)
+    return file.text
   }
 
   @Override
