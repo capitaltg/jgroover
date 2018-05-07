@@ -1,0 +1,67 @@
+{
+  "people": [
+    {
+      "id": 1,
+      "firstName": "Geoffrey",
+      "middleName": "Alexander",
+      "lastName": "Huntoon",
+      "gender": "male",
+      "dateOfBirth": "1990-12-17",
+      "age": 27,
+      "ssn": 123121234,
+      "photos": []
+    },
+    {
+      "id": 2,
+      "firstName": "Tobias",
+      "middleName": null,
+      "lastName": "Lazar",
+      "gender": "male",
+      "dateOfBirth": null,
+      "age": null,
+      "ssn": null,
+      "photos": []
+    },
+    {
+      "id": 3,
+      "firstName": "Mickey",
+      "middleName": "M",
+      "lastName": "Mouse",
+      "gender": "male",
+      "dateOfBirth": "1928-11-18",
+      "age": 89,
+      "ssn": null,
+      "photos": []
+    }
+  ],
+
+  "vehicles": [
+    {
+      "id": 1,
+      "vin": "52524AB25FG121",
+      "licensePlate": "1BR9534",
+      "vehicleType": "Car",
+      "make": "Ford",
+      "model": "Focus",
+      "year": 2002
+    },
+    { "id": 2,
+      "vin": null,
+      "licensePlate": "7654321",
+      "vehicleType": "Car",
+      "make": "Hyundai",
+      "model": "Sonata",
+      "year": 2012
+    },
+    {
+      "id": 3,
+      "vin": "515134151626",
+      "licensePlate": "BR56123",
+      "vehicleType": "Semi",
+      "make": "Ford",
+      "model": null,
+      "year": 2005
+    }
+  ]
+}
+

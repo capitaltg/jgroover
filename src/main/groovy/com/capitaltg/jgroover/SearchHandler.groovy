@@ -11,6 +11,9 @@ import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.handler.AbstractHandler
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
@@ -22,23 +25,25 @@ import com.jayway.jsonpath.PathNotFoundException
  */
 class SearchHandler extends AbstractHandler {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(SearchHandler)
+  
   def document
 
   SearchHandler(def filename) {
     def text = loadResource(filename)
     this.document = Configuration.defaultConfiguration().jsonProvider().parse(text);
-    
+    LOGGER.info("Initialized SearchHandler using $filename")
+    this.document.each { k, v -> LOGGER.info("  ${v.size()} $k records") }
   }
-  
+
   private String loadResource(def filename) {
-    
     def match = filename =~ /classpath:(.*)/
     if(match) {
       def resource = match.group(1)
       InputStream input = this.getClass().getResourceAsStream(resource);
       return input.text
     }
-    
+
     def file = new File(filename)
     return file.text
   }
@@ -51,23 +56,26 @@ class SearchHandler extends AbstractHandler {
     def match = request.requestURI =~ /\/api\/(\S*)/
     if(match) {
       def group = match.group(1)
-      def string = '$.'+group
+      def queryString = '$.'+group
       request.parameterMap.each { key, value ->
         (value as List).each { v ->
-          string += ("[?(@.$key == \"$v\")]")
+          queryString += ("[?(@.$key == \"$v\")]")
         }
       }
       try {
-        def results = JsonPath.read(document, string)
+        LOGGER.debug("Searching for $queryString")
+        def results = JsonPath.read(document, queryString)
         response.setContentType("text/json");
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().println(results);
+        LOGGER.debug("Found ${results.size()} results with total length of ${results.toString().length()} bytes")
       } catch (PathNotFoundException e) {
         // if no object exists in file, ignore that
       }
       base_request.setHandled(true);
       return
     }
+    LOGGER.warn("Invalid request URI: ${request.requestURI}")
     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     base_request.setHandled(true);
   }
