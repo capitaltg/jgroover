@@ -65,7 +65,7 @@ class SearchHandler extends AbstractHandler {
       try {
         LOGGER.debug("Searching for $queryString")
         def results = JsonPath.read(document, queryString)
-        response.setContentType("text/json");
+        response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().println(results);
         LOGGER.debug("Found ${results.size()} results with total length of ${results.toString().length()} bytes")
