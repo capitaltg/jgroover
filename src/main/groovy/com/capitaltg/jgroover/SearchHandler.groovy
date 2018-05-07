@@ -26,7 +26,7 @@ import com.jayway.jsonpath.PathNotFoundException
 class SearchHandler extends AbstractHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SearchHandler)
-  
+
   def document
 
   SearchHandler(def filename) {
@@ -59,16 +59,19 @@ class SearchHandler extends AbstractHandler {
       def queryString = '$.'+group
       request.parameterMap.each { key, value ->
         (value as List).each { v ->
-          queryString += ("[?(@.$key == \"$v\")]")
+          if(v.contains('*')) {
+            def v2 = v.replaceAll('\\*', '\\(\\.\\*\\)')
+            queryString += ("[?(@.$key =~ /$v2/i)]")
+          } else {
+            queryString += ("[?(@.$key =~ /$v/i)]")
+          }
         }
       }
       try {
-        LOGGER.debug("Searching for $queryString")
-        def results = JsonPath.read(document, queryString)
+        def results = search(queryString)
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().println(results);
-        LOGGER.debug("Found ${results.size()} results with total length of ${results.toString().length()} bytes")
       } catch (PathNotFoundException e) {
         // if no object exists in file, ignore that
       }
@@ -79,4 +82,17 @@ class SearchHandler extends AbstractHandler {
     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     base_request.setHandled(true);
   }
+  
+  def search(def queryString) {
+    try {
+      LOGGER.debug("Searching for $queryString")
+      def results = JsonPath.read(document, queryString)
+      LOGGER.debug("Found ${results.size()} results with total length of ${results.toString().length()} bytes")
+      return results
+    } catch (PathNotFoundException e) {
+      // if no object exists in file, ignore that
+    }
+
+  }
+  
 }
