@@ -18,6 +18,8 @@ import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 
+import groovy.json.JsonOutput
+
 /**
  * Handles all server searches.  Looks for APIs with format:
  *   /api/object?param1=value1&param2=value2...
@@ -28,6 +30,7 @@ class SearchHandler extends AbstractHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(SearchHandler)
 
   def document
+  def errorRate = 0
 
   SearchHandler(def filename) {
     def text = loadResource(filename)
@@ -53,6 +56,16 @@ class SearchHandler extends AbstractHandler {
   throws IOException, ServletException {
 
     Request base_request = (request instanceof Request) ? (Request)request:HttpConnection.getCurrentConnection().getRequest();
+
+    println "EEE: $errorRate"
+    
+    if(errorRate > Math.random()) {
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      base_request.setHandled(true);
+      response.getWriter().println(JsonOutput.toJson([error:'Failed to search JGroover', code:500]));
+      return
+    }
+
     def match = request.requestURI =~ /\/api\/(\S*)/
     if(match) {
       def group = match.group(1)
@@ -82,7 +95,7 @@ class SearchHandler extends AbstractHandler {
     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     base_request.setHandled(true);
   }
-  
+
   def search(def queryString) {
     try {
       LOGGER.debug("Searching for $queryString")
@@ -92,7 +105,5 @@ class SearchHandler extends AbstractHandler {
     } catch (PathNotFoundException e) {
       // if no object exists in file, ignore that
     }
-
   }
-  
 }
