@@ -29,8 +29,11 @@ class SearchHandler extends AbstractHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SearchHandler)
 
+  private Random random = new Random()
+  
   def document
   def errorRate = 0
+  def averageTimeDelay
 
   SearchHandler(def filename) {
     def text = loadResource(filename)
@@ -54,11 +57,10 @@ class SearchHandler extends AbstractHandler {
   @Override
   public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
   throws IOException, ServletException {
-
+    
+    sleep()
     Request base_request = (request instanceof Request) ? (Request)request:HttpConnection.getCurrentConnection().getRequest();
 
-    println "EEE: $errorRate"
-    
     if(errorRate > Math.random()) {
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       base_request.setHandled(true);
@@ -106,4 +108,12 @@ class SearchHandler extends AbstractHandler {
       // if no object exists in file, ignore that
     }
   }
+  
+  def sleep() {
+    if( averageTimeDelay > 0 ) {
+      def time = random.nextInt( 2 * averageTimeDelay)
+      Thread.sleep(time)
+    }
+  }
+  
 }
