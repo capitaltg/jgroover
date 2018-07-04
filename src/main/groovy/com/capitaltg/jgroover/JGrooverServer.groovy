@@ -9,18 +9,20 @@ import com.jayway.jsonpath.JsonPath
 
 class JGrooverServer {
 
-  private int port
   private Server server
   private SearchHandler handler
   
   static main(args) {
     JGrooverServer server = new JGrooverServer(5050, 'classpath:/test2.json')
+    server.setAverageTimeDelay(1000)
+    server.errorRate = 0.1
     server.startServer()
   }
 
   JGrooverServer(int port, def filename) {
-    this.port = port
+    server = new Server(port)
     this.handler = new SearchHandler(filename)
+    server.handler = this.handler
   }
 
   public setErrorRate(def errorRate) {
@@ -29,9 +31,11 @@ class JGrooverServer {
   }
   
   def void startServer() {
-    server = new Server(this.port)
-    server.handler = this.handler
     server.start()
+  }
+
+  def setAverageTimeDelay(def time) {
+    handler.averageTimeDelay = time
   }
   
   def void stopServer() {
@@ -39,4 +43,3 @@ class JGrooverServer {
   }
   
 }
-
