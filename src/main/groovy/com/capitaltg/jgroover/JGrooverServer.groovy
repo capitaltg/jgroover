@@ -4,19 +4,27 @@ import groovy.json.JsonSlurper
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 
 class JGrooverServer {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(JGrooverServer)
+
+  private static final int PORT = 5050;
+
   private Server server
   private SearchHandler handler
   
   static main(args) {
-    JGrooverServer server = new JGrooverServer(5050, 'classpath:/test2.json')
+    JGrooverServer server = new JGrooverServer(PORT, 'classpath:/test2.json')
     server.setAverageTimeDelay(1000)
     server.errorRate = 0.1
     server.startServer()
+    LOGGER.info("Started JGrooverServer on port $PORT")
   }
 
   JGrooverServer(int port, def filename) {
