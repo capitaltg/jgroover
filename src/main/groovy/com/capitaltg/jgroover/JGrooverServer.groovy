@@ -21,7 +21,8 @@ class JGrooverServer {
   
   static main(args) {
     String config = args ? args[0] : 'classpath:/test2.json'
-    JGrooverServer server = new JGrooverServer(DEFAULT_PORT, config)
+    int port = args?.length>1 ? args[1] as Integer : DEFAULT_PORT
+    JGrooverServer server = new JGrooverServer(port, config)
     server.setAverageTimeDelay(1000)
     server.errorRate = 0.1
     server.startServer()
