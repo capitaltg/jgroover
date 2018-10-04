@@ -14,23 +14,23 @@ class JGrooverServer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JGrooverServer)
 
-  private static final int PORT = 5050;
+  private static final int DEFAULT_PORT = 5050;
 
   private Server server
   private SearchHandler handler
   
   static main(args) {
-    JGrooverServer server = new JGrooverServer(PORT, 'classpath:/test2.json')
+    JGrooverServer server = new JGrooverServer(DEFAULT_PORT, 'classpath:/test2.json')
     server.setAverageTimeDelay(1000)
     server.errorRate = 0.1
     server.startServer()
-    LOGGER.info("Started JGrooverServer on port $PORT")
   }
 
   JGrooverServer(int port, def filename) {
     server = new Server(port)
     this.handler = new SearchHandler(filename)
     server.handler = this.handler
+    LOGGER.info("Initialized JGrooverServer on port $port, configured to use $filename")
   }
 
   public setErrorRate(def errorRate) {
