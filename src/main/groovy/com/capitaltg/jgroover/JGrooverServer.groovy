@@ -20,7 +20,8 @@ class JGrooverServer {
   private SearchHandler handler
   
   static main(args) {
-    JGrooverServer server = new JGrooverServer(DEFAULT_PORT, 'classpath:/test2.json')
+    String config = args ? args[0] : 'classpath:/test2.json'
+    JGrooverServer server = new JGrooverServer(DEFAULT_PORT, config)
     server.setAverageTimeDelay(1000)
     server.errorRate = 0.1
     server.startServer()
