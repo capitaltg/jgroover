@@ -40,7 +40,7 @@ version semverVersion()
 uploadArchives {
   repositories {
     mavenDeployer {
-      repository(url: "https://home.capitaltg.com/nexus/repository/ctg-release/") {
+      repository(url: "$nexusPublishUrl") {
         authentication(userName: "$nexusUsername", password: "$nexusPassword")
       }
     }
