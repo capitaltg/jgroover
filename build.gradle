@@ -1,4 +1,6 @@
 apply plugin: 'application'
+apply plugin: 'checkstyle'
+apply plugin: 'codenarc'
 apply plugin: 'eclipse'
 apply plugin: 'gitsemver'
 apply plugin: 'groovy'
@@ -51,4 +53,14 @@ uploadArchives {
     it.class.simpleName == "ArchivePublishArtifact" && it.archiveTask == task
   }
   task.enabled = false
+}
+
+codenarc {
+  toolVersion = '1.2'
+  reportFormat = 'html'
+}
+
+test {
+  dependsOn codenarcMain
+  dependsOn codenarcTest
 }

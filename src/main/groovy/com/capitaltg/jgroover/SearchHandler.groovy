@@ -1,14 +1,10 @@
 package com.capitaltg.jgroover
 
-import java.io.IOException
-
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.eclipse.jetty.server.Handler
 import org.eclipse.jetty.server.Request
-import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.handler.AbstractHandler
 
 import org.slf4j.Logger
@@ -30,51 +26,38 @@ class SearchHandler extends AbstractHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(SearchHandler)
 
   private Random random = new Random()
-  
-  def document
-  def errorRate = 0
-  def averageTimeDelay
+
+  Object document
+  long errorRate = 0
+  long averageTimeDelay
 
   SearchHandler(def filename) {
     def text = loadResource(filename)
-    this.document = Configuration.defaultConfiguration().jsonProvider().parse(text);
+    this.document = Configuration.defaultConfiguration().jsonProvider().parse(text)
     LOGGER.info("Initialized SearchHandler using $filename")
     this.document.each { k, v -> LOGGER.info("  ${v.size()} $k records") }
   }
 
-  private String loadResource(def filename) {
-    def match = filename =~ /classpath:(.*)/
-    if(match) {
-      def resource = match.group(1)
-      InputStream input = this.getClass().getResourceAsStream(resource);
-      return input.text
-    }
-
-    def file = new File(filename)
-    return file.text
-  }
-
   @Override
-  public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+  void handle(String target, Request request, HttpServletRequest servletRequest, HttpServletResponse response)
   throws IOException, ServletException {
-    
-    sleep()
-    Request base_request = (request instanceof Request) ? (Request)request:HttpConnection.getCurrentConnection().getRequest();
 
-    if(errorRate > Math.random()) {
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      base_request.setHandled(true);
-      response.getWriter().println(JsonOutput.toJson([error:'Failed to search JGroover', code:500]));
+    sleep()
+
+    if (errorRate > Math.random()) {
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+      request.setHandled(true)
+      response.getWriter().println(JsonOutput.toJson([error:'Failed to search JGroover', code:500]))
       return
     }
 
-    def match = request.requestURI =~ /\/api\/(\S*)/
-    if(match) {
+    def match = servletRequest.requestURI =~ /\/api\/(\S*)/
+    if (match) {
       def group = match.group(1)
-      def queryString = '$.'+group
-      request.parameterMap.each { key, value ->
+      def queryString = '$.' + group
+      servletRequest.parameterMap.each { key, value ->
         (value as List).each { v ->
-          if(v.contains('*')) {
+          if (v.contains('*')) {
             def v2 = v.replaceAll('\\*', '\\(\\.\\*\\)')
             queryString += ("[?(@.$key =~ /$v2/i)]")
           } else {
@@ -84,18 +67,18 @@ class SearchHandler extends AbstractHandler {
       }
       try {
         def results = search(queryString)
-        response.setContentType("application/json");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().println(results);
+        response.setContentType("application/json")
+        response.setStatus(HttpServletResponse.SC_OK)
+        response.getWriter().println(results)
       } catch (PathNotFoundException e) {
         // if no object exists in file, ignore that
       }
-      base_request.setHandled(true);
+      request.setHandled(true)
       return
     }
-    LOGGER.warn("Invalid request URI: ${request.requestURI}")
-    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    base_request.setHandled(true);
+    LOGGER.warn("Invalid request URI: ${servletRequest.requestURI}")
+    response.setStatus(HttpServletResponse.SC_BAD_REQUEST)
+    request.setHandled(true)
   }
 
   def search(def queryString) {
@@ -108,12 +91,23 @@ class SearchHandler extends AbstractHandler {
       // if no object exists in file, ignore that
     }
   }
-  
-  def sleep() {
-    if( averageTimeDelay > 0 ) {
+
+  private sleep() {
+    if (averageTimeDelay > 0) {
       def time = random.nextInt( 2 * averageTimeDelay)
       Thread.sleep(time)
     }
   }
-  
+
+  private String loadResource(def filename) {
+    def match = filename =~ /classpath:(.*)/
+    if (match) {
+      def resource = match.group(1)
+      InputStream input = this.getClass().getResourceAsStream(resource)
+      return input.text
+    }
+
+    def file = new File(filename)
+    return file.text
+  }
 }

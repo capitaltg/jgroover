@@ -1,27 +1,22 @@
 package com.capitaltg.jgroover
 
-import groovy.json.JsonSlurper
 import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.servlet.ServletContextHandler
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
-import com.jayway.jsonpath.Configuration
-import com.jayway.jsonpath.JsonPath
 
 class JGrooverServer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JGrooverServer)
 
-  private static final int DEFAULT_PORT = 5050;
+  private static final int DEFAULT_PORT = 5050
 
   private Server server
   private SearchHandler handler
-  
+
   static main(args) {
     String config = args ? args[0] : 'classpath:/test2.json'
-    int port = args?.length>1 ? args[1] as Integer : DEFAULT_PORT
+    int port = args?.length > 1 ? args[1] as Integer : DEFAULT_PORT
     JGrooverServer server = new JGrooverServer(port, config)
     server.setAverageTimeDelay(1000)
     server.errorRate = 0.1
@@ -35,21 +30,21 @@ class JGrooverServer {
     LOGGER.info("Initialized JGrooverServer on port $port, configured to use $filename")
   }
 
-  public setErrorRate(def errorRate) {
+  def setErrorRate(def errorRate) {
     this.handler.errorRate = errorRate
     return this
   }
-  
-  def void startServer() {
+
+  void startServer() {
     server.start()
   }
 
   def setAverageTimeDelay(def time) {
     handler.averageTimeDelay = time
   }
-  
-  def void stopServer() {
+
+  void stopServer() {
     server.stop()
   }
-  
+
 }
