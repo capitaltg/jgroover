@@ -7,8 +7,8 @@ apply plugin: 'maven'
 
 buildscript {
   repositories {
-    maven { url 'https://home.capitaltg.com/nexus/repository/release-combined/' }
-    jcenter()
+    mavenCentral()
+    maven { url 'https://dl.bintray.com/palantir/releases/' }
   }
   dependencies {
     classpath 'com.palantir:gradle-gitsemver:0.6.0'
@@ -16,20 +16,19 @@ buildscript {
 }
 
 repositories {
-  maven { url = "https://home.capitaltg.com/nexus/repository/ctg-release/" }
-  maven { url = "https://home.capitaltg.com/nexus/repository/public-combined/" }
+  mavenCentral()
 }
 
 dependencies {
-  compile "org.slf4j:slf4j-api:$versionslf4j"
-  compile "org.slf4j:slf4j-log4j12:$versionslf4j"
-  compile "log4j:log4j:$versionlog4j"
-  
-    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.15'
-    compile 'org.eclipse.jetty:jetty-servlet:9.4.8.v20171121'
-    compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
-    
-    testCompile 'junit:junit:4.12'
+  compile "org.slf4j:slf4j-api:1.7.21"
+  compile "org.slf4j:slf4j-log4j12:1.7.21"
+  compile "log4j:log4j:1.2.17"
+
+  compile 'org.codehaus.groovy:groovy-all:2.4.15'
+  compile 'org.eclipse.jetty:jetty-servlet:9.4.8.v20171121'
+  compile 'com.jayway.jsonpath:json-path:2.4.0'
+
+  testCompile 'junit:junit:4.12'
 }
 
 mainClassName = "com.capitaltg.jgroover.JGrooverServer"
