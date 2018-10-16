@@ -1,12 +1,3 @@
-apply plugin: 'application'
-apply plugin: 'checkstyle'
-apply plugin: 'codenarc'
-apply plugin: 'eclipse'
-apply plugin: 'gitsemver'
-apply plugin: 'groovy'
-apply plugin: 'java'
-apply plugin: 'maven'
-
 buildscript {
   repositories {
     mavenCentral()
@@ -16,6 +7,20 @@ buildscript {
     classpath 'com.palantir:gradle-gitsemver:0.6.0'
   }
 }
+
+
+apply plugin: 'application'
+apply plugin: 'checkstyle'
+apply plugin: 'codenarc'
+apply plugin: 'eclipse'
+apply plugin: 'gitsemver'
+apply plugin: 'groovy'
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+
 
 repositories {
   mavenCentral()
@@ -33,6 +38,25 @@ dependencies {
   testCompile 'junit:junit:4.12'
 }
 
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+artifacts {
+  archives sourcesJar
+  archives javadocJar
+}
+
+signing {
+    sign configurations.archives
+}
+
 mainClassName = "com.capitaltg.jgroover.JGrooverServer"
 
 group = 'com.capitaltg'
@@ -41,12 +65,42 @@ version semverVersion()
 uploadArchives {
   repositories {
     mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
       repository(url: "$nexusPublishUrl") {
-        authentication(userName: "$nexusUsername", password: "$nexusPassword")
+        authentication(userName: nexusUsername, password: nexusPassword)
+      }
+
+      pom.project {
+        name 'JGroover'
+        packaging 'jar'
+        description 'Groovy-based JSON server'
+        url 'https://github.com/capitaltg/jgroover'
+
+        scm {
+          connection 'https://github.com/capitaltg/jgroover.git'
+          url 'https://github.com/capitaltg/jgroover'
+        }
+
+        licenses {
+          license {
+            name 'The Apache License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+
+        developers {
+          developer {
+            id 'tslazar'
+            name 'Toby Lazar'
+            email 'tlazar@capitaltg.com'
+          }
+        }
       }
     }
   }
 }
+
 
 [distTar].each { task ->
   configurations.archives.artifacts.removeAll {
@@ -64,3 +118,21 @@ test {
   dependsOn codenarcMain
   dependsOn codenarcTest
 }
+
+
+pom {
+  project {
+    name 'JGroover'
+    description 'Groovy-based JSON server'
+    inceptionYear '2018'
+    licenses {
+      license {
+        name 'The Apache Software License, Version 2.0'
+        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        distribution 'repo'
+      }
+    }
+  }
+}
+
+
